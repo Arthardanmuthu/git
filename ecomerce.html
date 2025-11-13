@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ShopDemo — Single Page</title>
+    <meta
+      name="description"
+      content="ShopDemo single-page multi-feature e-commerce demo (localStorage)"
+    />
+    <style>
+      /* ---------- simple, modern styling ---------- */
+      :root {
+        --primary: #0ea5e9;
+        --primary-700: #0284c7;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --shadow: 0 8px 24px rgba(2, 6, 23, 0.06);
+        --danger: #ef4444;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial;
+        margin: 0;
+        background: linear-gradient(180deg, #f8fafc 0, #eef2ff 100%);
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        background: var(--card);
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .brand {
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 1.15rem;
+      }
+      nav {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      nav a {
+        color: #0f172a;
+        text-decoration: none;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+      nav a.active,
+      nav a:hover {
+        background: #eef6fb;
+        color: var(--primary-700);
+      }
+      .auth {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+      }
+      .container {
+        max-width: 1100px;
+        margin: 20px auto;
+        padding: 18px;
+      }
+      .hero {
+        background: linear-gradient(90deg, #fff, #f6fbff);
+        padding: 26px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.04);
+        text-align: center;
+      }
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: 1.6rem;
+        color: var(--primary-700);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 18px;
+        margin-top: 14px;
+      }
+      .card {
+        background: var(--card);
+        padding: 12px;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+      }
+      .product .media {
+        height: 150px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #eefcff, #f9fbff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-700);
+        font-weight: 700;
+      }
+      .product h3 {
+        margin: 8px 0 4px;
+        font-size: 1.05rem;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .price {
+        color: var(--primary);
+        font-weight: 800;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      footer {
+        text-align: center;
+        padding: 16px;
+        color: var(--muted);
+        margin-top: 28px;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      input,
+      textarea,
+      select {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e6eef7;
+        font-size: 1rem;
+      }
+      textarea {
+        resize: vertical;
+      }
+      .small {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .hidden {
+        display: none;
+      }
+      .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .flex {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .report {
+        margin-top: 12px;
+      }
+      /* modal */
+      .modal-root {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        z-index: 60;
+      }
+      .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.45);
+      }
+      .modal-card {
+        position: relative;
+        background: var(--card);
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(2, 6, 23, 0.18);
+        width: 100%;
+        max-width: 460px;
+        z-index: 10;
+      }
+      .close-x {
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        background: transparent;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      /* responsive */
+      @media (max-width: 700px) {
+        nav {
+          display: none;
+        }
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">ShopDemo</div>
+
+      <nav id="mainNav" aria-label="Main navigation">
+        <a href="#" data-view="home" class="active">Home</a>
+        <a href="#" data-view="products">Products</a>
+        <a href="#" data-view="orders">Orders</a>
+        <a href="#" data-view="wishlist">Wishlist</a>
+        <a href="#" data-view="contact">Contact Us</a>
+        <a href="#" data-view="about">About Us</a>
+      </nav>
+
+      <div class="auth">
+        <div id="greeting" class="small" style="margin-right: 6px"></div>
+        <button id="loginBtn" class="btn ghost">Login</button>
+        <button id="registerBtn" class="btn">Register</button>
+        <button id="logoutBtn" class="btn hidden" style="background: #ef4444">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Home -->
+      <section id="view-home" class="view">
+        <div class="hero card">
+          <h1>Welcome to ShopDemo</h1>
+          <p class="small">
+            A simple single-page e-commerce portal for your assignment. Uses
+            <strong>localStorage</strong> to persist data.
+          </p>
+        </div>
+
+        <section class="featured">
+          <h2 style="margin-top: 18px">Featured Products</h2>
+          <div id="featuredGrid" class="grid"></div>
+        </section>
+      </section>
+
+      <!-- Products -->
+      <section id="view-products" class="view hidden">
+        <h2>Products</h2>
+        <div id="productsGrid" class="grid"></div>
+      </section>
+
+      <!-- Orders -->
+      <section id="view-orders" class="view hidden">
+        <h2>Your Orders</h2>
+        <div id="ordersList"></div>
+        <div class="report">
+          <button id="downloadReportBtn" class="btn">
+            Download JSON Report
+          </button>
+        </div>
+      </section>
+
+      <!-- Wishlist -->
+      <section id="view-wishlist" class="view hidden">
+        <h2>Your Wishlist</h2>
+        <div id="wishlistList"></div>
+      </section>
+
+      <!-- Contact -->
+      <section id="view-contact" class="view hidden">
+        <h2>Contact Customer Care</h2>
+        <form id="contactForm" class="card" style="max-width: 720px">
+          <label>Full name <input id="contactName" required /></label>
+          <label>Email <input id="contactEmail" type="email" required /></label>
+          <label>Subject <input id="contactSubject" required /></label>
+          <label
+            >Message <textarea id="contactMessage" rows="4" required></textarea>
+          </label>
+          <div style="display: flex; justify-content: flex-end; gap: 8px">
+            <button type="submit" class="btn">Send Message</button>
+          </div>
+        </form>
+        <div id="messagesList" style="margin-top: 12px"></div>
+      </section>
+
+      <!-- About -->
+      <section id="view-about" class="view hidden">
+        <h2>About ShopDemo</h2>
+        <div class="card">
+          <p class="small">
+            This is a minimal single-page e-commerce portal built for academic
+            assignment. It demonstrates navigation, registration/login
+            validation, wishlist, orders, reviews, contact form, and JSON
+            reporting — all stored in localStorage.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>© ShopDemo</footer>
+
+    <!-- Modal root -->
+    <div id="modalRoot" class="hidden"></div>
+
+    <script>
+      /* ---------- Data & storage keys ---------- */
+      const SAMPLE_PRODUCTS = [
+        {
+          id: 1,
+          name: "Wireless Headphones",
+          price: 49.99,
+          rating: 4.3,
+          img: "https://m.media-amazon.com/images/I/61CGHv6kmWL._SL1500_.jpg",
+        },
+        {
+          id: 2,
+          name: "Smart Watch",
+          price: 89.99,
+          rating: 4.6,
+          img: "https://static.vecteezy.com/system/resources/previews/032/427/657/non_2x/digital-smart-watch-on-abstract-background-generative-ai-photo.jpg",
+        },
+        {
+          id: 3,
+          name: "Bluetooth Speaker",
+          price: 39.99,
+          rating: 4.1,
+          img: "https://m.media-amazon.com/images/I/71d5fMDvq9L._SL1500_.jpg",
+        },
+        {
+          id: 4,
+          name: "Gaming Mouse",
+          price: 29.99,
+          rating: 4.2,
+          img: "https://m.media-amazon.com/images/I/61LtuGzXeaL._SL1500_.jpg",
+        },
+        {
+          id: 5,
+          name: "Laptop Sleeve",
+          price: 14.99,
+          rating: 4.0,
+          img: "https://m.media-amazon.com/images/I/71RC6qRZk+L._SL1500_.jpg",
+        },
+      ];
+
+      const LS = {
+        user: "sd_user",
+        cart: "sd_cart",
+        wishlist: "sd_wishlist",
+        reviews: "sd_reviews",
+        messages: "sd_messages",
+      };
+
+      // ensure arrays exist
+      if (!localStorage.getItem(LS.cart))
+        localStorage.setItem(LS.cart, JSON.stringify([]));
+      if (!localStorage.getItem(LS.wishlist))
+        localStorage.setItem(LS.wishlist, JSON.stringify([]));
+      if (!localStorage.getItem(LS.reviews))
+        localStorage.setItem(LS.reviews, JSON.stringify([]));
+      if (!localStorage.getItem(LS.messages))
+        localStorage.setItem(LS.messages, JSON.stringify([]));
+
+      /* ---------- Helpers ---------- */
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) =>
+        Array.from(root.querySelectorAll(sel));
+      const read = (k) => JSON.parse(localStorage.getItem(k));
+      const write = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+      function fmtPrice(n) {
+        return "₹" + n.toFixed(2);
+      }
+      function escapeHTML(s) {
+        return String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])
+        );
+      }
+      function showView(view) {
+        document
+          .querySelectorAll(".view")
+          .forEach((el) => el.classList.add("hidden"));
+        const sel = "#view-" + view;
+        const target = document.querySelector(sel);
+        if (target) target.classList.remove("hidden");
+        // nav active
+        document
+          .querySelectorAll("nav a")
+          .forEach((a) =>
+            a.classList.toggle("active", a.dataset.view === view)
+          );
+        // scroll top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        // render page-specific content
+        if (view === "products") renderProducts();
+        if (view === "orders") renderOrders();
+        if (view === "wishlist") renderWishlist();
+        if (view === "contact") renderMessagesList();
+      }
+
+      /* ---------- Auth UI ---------- */
+      function renderAuthUI() {
+        const user = JSON.parse(localStorage.getItem(LS.user));
+        const greeting = $("#greeting");
+        const loginBtn = $("#loginBtn");
+        const registerBtn = $("#registerBtn");
+        const logoutBtn = $("#logoutBtn");
+        if (user) {
+          greeting.textContent = "Hi, " + user.name;
+          loginBtn.classList.add("hidden");
+          registerBtn.classList.add("hidden");
+          logoutBtn.classList.remove("hidden");
+        } else {
+          greeting.textContent = "";
+          loginBtn.classList.remove("hidden");
+          registerBtn.classList.remove("hidden");
+          logoutBtn.classList.add("hidden");
+        }
+      }
+
+      /* ---------- Modal helpers ---------- */
+      function openModal(html) {
+        const root = $("#modalRoot");
+        root.innerHTML = `
+      <div class="modal-root">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-card">
+          <button class="close-x" onclick="closeModal()">×</button>
+          ${html}
+        </div>
+      </div>
+    `;
+        root.classList.remove("hidden");
+      }
+      function closeModal() {
+        $("#modalRoot").innerHTML = "";
+        $("#modalRoot").classList.add("hidden");
+      }
+
+      /* ---------- Login / Register ---------- */
+      document.getElementById("loginBtn").addEventListener("click", () => {
+        openModal(`
+      <h3>Login</h3>
+      <form id="loginForm">
+        <label>Email<input id="loginEmail" type="email" required></label>
+        <label>Password<input id="loginPass" type="password" required></label>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Login</button></div>
+        <p class="small" style="margin-top:8px">Don't have an account? <a href="#" id="toRegister">Register</a></p>
+      </form>
+    `);
+        setTimeout(() => {
+          const lf = document.getElementById("loginForm");
+          lf.onsubmit = (e) => {
+            e.preventDefault();
+            const email = $("#loginEmail").value.trim().toLowerCase();
+            const pass = $("#loginPass").value;
+            const user = JSON.parse(localStorage.getItem(LS.user));
+            if (user && user.email === email && user.password === pass) {
+              alert("Welcome back, " + user.name + "!");
+              renderAuthUI();
+              closeModal();
+            } else {
+              alert(
+                "Invalid credentials. For this demo register first or use the register form."
+              );
+            }
+          };
+          $("#toRegister").onclick = (ev) => {
+            ev.preventDefault();
+            closeModal();
+            document.getElementById("registerBtn").click();
+          };
+        }, 50);
+      });
+
+      document.getElementById("registerBtn").addEventListener("click", () => {
+        openModal(`
+      <h3>Register</h3>
+      <form id="regForm">
+        <label>Full name<input id="regName" type="text" required></label>
+        <label>Email<input id="regEmail" type="email" required></label>
+        <label>Password<input id="regPass" type="password" required></label>
+        <label>Confirm Password<input id="regPass2" type="password" required></label>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Create account</button></div>
+      </form>
+    `);
+        setTimeout(() => {
+          const rf = document.getElementById("regForm");
+          rf.onsubmit = (e) => {
+            e.preventDefault();
+            const name = $("#regName").value.trim();
+            const email = $("#regEmail").value.trim().toLowerCase();
+            const p = $("#regPass").value;
+            const p2 = $("#regPass2").value;
+            if (!name || !email) return alert("Enter name and email");
+            if (p.length < 6)
+              return alert("Password must be at least 6 characters");
+            if (p !== p2) return alert("Passwords do not match");
+            localStorage.setItem(
+              LS.user,
+              JSON.stringify({ name, email, password: p })
+            );
+            alert("Registered and logged in as " + name);
+            renderAuthUI();
+            closeModal();
+          };
+        }, 50);
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem(LS.user);
+        renderAuthUI();
+        alert("You have been logged out");
+      });
+
+      /* ---------- Render products + featured ---------- */
+      function productCardHTML(p) {
+        const img =
+          p.img ||
+          `https://via.placeholder.com/420x280.png?text=${encodeURIComponent(
+            p.name
+          )}`;
+
+        return `
+      <div class="card product" data-id="${p.id}">
+        <div class="media center"><img src="${img}" alt="${escapeHTML(
+          p.name
+        )}" loading="lazy" style="max-width:96%;border-radius:6px" onerror="this.onerror=null;this.src='https://via.placeholder.com/420x280.png?text=No+Image';"></div>
+        <h3>${escapeHTML(p.name)}</h3>
+        <div class="muted">Rating: ${p.rating}</div>
+        <div class="price" style="margin-top:6px">${fmtPrice(p.price)}</div>
+        <div class="actions">
+          <button class="btn buyBtn" data-id="${p.id}">Buy Now</button>
+          <button class="btn ghost wishBtn" data-id="${p.id}">Wishlist</button>
+        </div>
+        <div style="margin-top:8px">
+          <strong class="small">Reviews</strong>
+          <div id="reviews-for-${p.id}" class="small"></div>
+          <div style="margin-top:6px">
+            <input placeholder="Your name" id="rev-author-${
+              p.id
+            }" style="padding:8px;border-radius:6px;width:48%;margin-right:4%"><input placeholder="Rating 1-5" id="rev-rating-${
+          p.id
+        }" style="padding:8px;border-radius:6px;width:48%"> 
+            <textarea id="rev-text-${
+              p.id
+            }" placeholder="Write a review" rows="2" style="margin-top:6px"></textarea>
+            <div style="text-align:right;margin-top:6px"><button class="btn postRev" data-id="${
+              p.id
+            }">Post Review</button></div>
+          </div>
+        </div>
+      </div>
+    `;
+      }
+
+      function renderFeatured() {
+        const f = $("#featuredGrid");
+        f.innerHTML = SAMPLE_PRODUCTS.slice(0, 3).map(productCardHTML).join("");
+        // attach actions
+        attachProductActions(f);
+        // render reviews inside
+        SAMPLE_PRODUCTS.slice(0, 3).forEach((p) => renderReviewsFor(p.id));
+      }
+
+      function renderProducts() {
+        const g = $("#productsGrid");
+        g.innerHTML = SAMPLE_PRODUCTS.map(productCardHTML).join("");
+        attachProductActions(g);
+        SAMPLE_PRODUCTS.forEach((p) => renderReviewsFor(p.id));
+      }
+
+      function attachProductActions(root) {
+        root.querySelectorAll(".buyBtn").forEach((b) => {
+          b.onclick = (e) => {
+            const id = +b.dataset.id;
+            placeOrder(id);
+          };
+        });
+        root.querySelectorAll(".wishBtn").forEach((b) => {
+          b.onclick = (e) => {
+            const id = +b.dataset.id;
+            toggleWishlist(id);
+            renderWishlist();
+          };
+        });
+        root.querySelectorAll(".postRev").forEach((b) => {
+          b.onclick = (e) => {
+            const id = +b.dataset.id;
+            const authorEl = document.getElementById("rev-author-" + id);
+            const ratingEl = document.getElementById("rev-rating-" + id);
+            const textEl = document.getElementById("rev-text-" + id);
+            const author = authorEl ? authorEl.value.trim() : "Anonymous";
+            const rating = ratingEl ? Number(ratingEl.value) || 5 : 5;
+            const text = textEl ? textEl.value.trim() : "";
+            if (!text) return alert("Write a review comment");
+            postReview({ productId: id, author, rating, text });
+            if (authorEl) authorEl.value = "";
+            if (ratingEl) ratingEl.value = "";
+            if (textEl) textEl.value = "";
+            renderReviewsFor(id);
+          };
+        });
+      }
+
+      /* ---------- Reviews ---------- */
+      function postReview({ productId, author, rating, text }) {
+        const arr = read(LS.reviews);
+        arr.unshift({
+          id: Date.now(),
+          productId,
+          author,
+          rating,
+          text,
+          date: new Date().toISOString(),
+        });
+        write(LS.reviews, arr);
+        alert("Review posted");
+      }
+      function renderReviewsFor(productId) {
+        const el = document.getElementById("reviews-for-" + productId);
+        if (!el) return;
+        const revs = read(LS.reviews)
+          .filter((r) => r.productId === productId)
+          .slice(0, 5);
+        if (!revs.length) {
+          el.innerHTML = '<div class="muted">No reviews yet.</div>';
+          return;
+        }
+        el.innerHTML = revs
+          .map(
+            (r) =>
+              `<div style="margin-top:6px"><strong>${escapeHTML(
+                r.author
+              )}</strong> <span class="small">(${new Date(
+                r.date
+              ).toLocaleString()})</span><div class="small">Rating: ${
+                r.rating
+              }</div><div>${escapeHTML(r.text)}</div></div>`
+          )
+          .join("");
+      }
+
+      /* ---------- Wishlist ---------- */
+      function toggleWishlist(productId) {
+        const list = read(LS.wishlist);
+        const exists = list.find((x) => x.id === productId);
+        if (exists) {
+          write(
+            LS.wishlist,
+            list.filter((x) => x.id !== productId)
+          );
+          alert("Removed from wishlist");
+        } else {
+          const p = SAMPLE_PRODUCTS.find((s) => s.id === productId);
+          list.unshift(p);
+          write(LS.wishlist, list);
+          alert("Added to wishlist");
+        }
+        renderWishlist();
+      }
+      function renderWishlist() {
+        const container = $("#wishlistList");
+        const list = read(LS.wishlist);
+        if (!container) return;
+        if (!list.length) {
+          container.innerHTML =
+            '<div class="card small">Wishlist is empty.</div>';
+          return;
+        }
+        container.innerHTML = list
+          .map(
+            (p) =>
+              `<div class="card" style="display:flex;gap:12px;align-items:center"><div style="flex:1"><strong>${escapeHTML(
+                p.name
+              )}</strong><div class="small">${fmtPrice(
+                p.price
+              )}</div></div><div style="display:flex;gap:8px"><button class="btn" onclick="placeOrder(${
+                p.id
+              })">Buy</button><button class="btn ghost" onclick="toggleWishlist(${
+                p.id
+              })">Remove</button></div></div>`
+          )
+          .join("");
+      }
+
+      /* ---------- Orders ---------- */
+      function placeOrder(productId) {
+        const user = JSON.parse(localStorage.getItem(LS.user));
+        if (!user) return alert("Please login/register to place orders.");
+        const p = SAMPLE_PRODUCTS.find((s) => s.id === productId);
+        const cart = read(LS.cart);
+        cart.unshift({
+          id: Date.now(),
+          product: p,
+          date: new Date().toISOString(),
+        });
+        write(LS.cart, cart);
+        alert("Order placed: " + p.name);
+        renderOrders();
+      }
+      function renderOrders() {
+        const container = $("#ordersList");
+        const orders = read(LS.cart);
+        if (!orders.length) {
+          container.innerHTML = '<div class="card small">No orders yet.</div>';
+          return;
+        }
+        container.innerHTML = orders
+          .map(
+            (o) =>
+              `<div class="card" style="margin-bottom:8px"><strong>${escapeHTML(
+                o.product.name
+              )}</strong><div class="small">${fmtPrice(
+                o.product.price
+              )} • Ordered: ${new Date(o.date).toLocaleString()}</div></div>`
+          )
+          .join("");
+      }
+
+      /* ---------- Contact / Messages ---------- */
+      $("#contactForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const payload = {
+          id: Date.now(),
+          name: $("#contactName").value.trim(),
+          email: $("#contactEmail").value.trim(),
+          subject: $("#contactSubject").value.trim(),
+          message: $("#contactMessage").value.trim(),
+          date: new Date().toISOString(),
+        };
+        if (
+          !payload.name ||
+          !payload.email ||
+          !payload.subject ||
+          !payload.message
+        )
+          return alert("Please fill all fields");
+        const msgs = read(LS.messages);
+        msgs.unshift(payload);
+        write(LS.messages, msgs);
+        alert("Message sent. Customer care will contact you.");
+        $("#contactForm").reset();
+        renderMessagesList();
+      });
+
+      function renderMessagesList() {
+        const el = $("#messagesList");
+        const msgs = read(LS.messages);
+        if (!msgs.length) {
+          el.innerHTML = '<div class="small muted">No messages yet.</div>';
+          return;
+        }
+        el.innerHTML = msgs
+          .map(
+            (m) =>
+              `<div class="card" style="margin-bottom:8px"><strong>${escapeHTML(
+                m.name
+              )}</strong> <div class="small">${new Date(
+                m.date
+              ).toLocaleString()}</div><div class="small">${escapeHTML(
+                m.subject
+              )}</div><div style="margin-top:6px">${escapeHTML(
+                m.message
+              )}</div></div>`
+          )
+          .join("");
+      }
+
+      /* ---------- Reporting ---------- */
+      $("#downloadReportBtn").addEventListener("click", downloadReport);
+      function downloadReport() {
+        const payload = {
+          generatedAt: new Date().toISOString(),
+          user: JSON.parse(localStorage.getItem(LS.user)),
+          orders: read(LS.cart),
+          wishlist: read(LS.wishlist),
+          reviews: read(LS.reviews),
+          messages: read(LS.messages),
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "shopdemo-report-" + Date.now() + ".json";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      /* ---------- Nav & init ---------- */
+      document.querySelectorAll("nav a").forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          const view = a.dataset.view;
+          showView(view);
+        });
+      });
+
+      // initial render
+      function init() {
+        renderAuthUI();
+        renderFeatured();
+        renderProducts();
+        renderWishlist();
+        renderOrders();
+        renderMessagesList();
+      }
+      init();
+
+      // expose some functions for inline buttons (simple)
+      window.placeOrder = placeOrder;
+      window.toggleWishlist = toggleWishlist;
+      window.downloadReport = downloadReport;
+    </script>
+  </body>
+</html>
