@@ -75,23 +75,4 @@ Modal for Register/Login
 
 Reusable UI components
 
-🗂️ Project Structure
-
-All logic and styling exist in one HTML file:
-
-index.html
- ├── <style> ... CSS styles
- ├── <body>
- │    ├── Header + Navigation
- │    ├── Home / Products / Orders / Wishlist / Contact / About sections
- │    ├── Modal container
- └── <script> ... All JavaScript logic
-
-💾 LocalStorage Keys
-Key	Purpose
-sd_user	Saved user (name, email, password)
-sd_cart	Order history
-
-sd_wishlist	Wishlist items
-sd_reviews	Product reviews
-sd_messages	Contact form messages
+Website Link : https://arthardanmuthu.github.io/git/
